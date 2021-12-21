@@ -13,9 +13,9 @@
     "@angular/platform-browser-dynamic": "^12.2.0",
     "@angular/router": "^12.2.0",
     "@nativescript/angular": "^12.2.0",
+    "@nativescript/camera": "^5.0.10",
     "@nativescript/core": "~8.1.1",
     "@nativescript/theme": "~3.0.1",
-    "nativescript-camera": "^4.5.0",
     "reflect-metadata": "~0.1.13",
     "rxjs": "~7.3.0",
     "zone.js": "~0.11.4"

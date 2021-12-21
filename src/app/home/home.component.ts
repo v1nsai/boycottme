@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core'
-
+import * as camera from "@nativescript/camera";
 import { DataService, DataItem } from '../shared/data.service'
 
 @Component({
@@ -11,7 +11,12 @@ export class HomeComponent implements OnInit {
 
   constructor(private _itemService: DataService) {}
 
+  cameraIsAvailable(): void {
+    console.log('camera is available = ' + camera.isAvailable());
+  }
+
   ngOnInit(): void {
-    this.items = this._itemService.getItems()
+    this.items = this._itemService.getItems();
+    this.cameraIsAvailable();
   }
 }
