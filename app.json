@@ -19,17 +19,13 @@
       "**/*"
     ],
     "ios": {
-      "infoPlist": {
-        "NSCameraUsageDescription": "Please allow camera access for the scanner"
-      },
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "permissions": ["CAMERA"]
+      }
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
