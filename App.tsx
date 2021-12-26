@@ -10,6 +10,7 @@ import ApiCredentials from './credentials.json'
 function HomeScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
+  const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -26,6 +27,7 @@ function HomeScreen({ navigation }) {
   }
 
   async function onScan(result: BarCodeScanningResult) {
+    setScanned(true);
     const details = await getDetailsFromBarcode(result.data);
     navigation.navigate('Settings', details);
   }
@@ -34,7 +36,7 @@ function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <Camera style={styles.camera}
         type={type}
-        onBarCodeScanned={result => onScan(result)}>
+        onBarCodeScanned={scanned ? undefined : onScan}>
         <View>
           <TouchableOpacity
             onPress={() => {
@@ -60,7 +62,7 @@ function SettingsScreen({ route, navigation }) {
   const details = route.params;
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>brand = {details['hints']}</Text>
+      <Text>brand = {details['hints'][0]['food']['brand']}</Text>
     </View>
   );
 }
