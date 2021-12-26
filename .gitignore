@@ -14,4 +14,4 @@ web-build/
 .DS_Store
 
 # api creds
-./credentials.json
+credentials.json

@@ -1,30 +1,13 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BarCodeScanningResult, Camera } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import ApiCredentials from './credentials.json'
 
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home!</Text>
-    </View>
-  );
-}
-
-function SettingsScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
-    </View>
-  );
-}
-
-const Tab = createBottomTabNavigator();
-
-export default function App() {
+function HomeScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
 
@@ -42,15 +25,16 @@ export default function App() {
     return <Text>No access to camera</Text>;
   }
 
-  function onScan(result: BarCodeScanningResult) {
-    console.log("type = " + result.type);
-    console.log("data = " + result.data);
+  async function onScan(result: BarCodeScanningResult) {
+    const details = await getDetailsFromBarcode(result.data);
+    navigation.navigate('Settings', details);
   }
+
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} 
-          type={type} 
-          onBarCodeScanned={result => onScan(result)}>
+      <Camera style={styles.camera}
+        type={type}
+        onBarCodeScanned={result => onScan(result)}>
         <View>
           <TouchableOpacity
             onPress={() => {
@@ -64,7 +48,43 @@ export default function App() {
           </TouchableOpacity>
         </View>
       </Camera>
+      <Button
+        title="Go to Settings"
+        onPress={() => navigation.navigate('Settings')}
+      />
     </View>
+  );
+}
+
+function SettingsScreen({ route, navigation }) {
+  const details = route.params;
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>brand = {details['hints']}</Text>
+    </View>
+  );
+}
+
+const Tab = createBottomTabNavigator();
+
+async function getDetailsFromBarcode(barcode: String) {
+  const response = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${ApiCredentials['appId']}&app_key=${ApiCredentials['appKey']}&upc=${barcode}&nutrition-type=cooking`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json'
+    }
+  });
+  return response.json();
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
 
