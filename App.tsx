@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Camera } from 'expo-camera';
+import { BarCodeScanningResult, Camera } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
 function HomeScreen() {
@@ -31,7 +31,6 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      alert(status)
       setHasPermission(status === 'granted');
     })();
   }, []);
@@ -42,11 +41,16 @@ export default function App() {
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
+  function onScan(result: BarCodeScanningResult) {
+    console.log("type = " + result.type);
+    console.log("data = " + result.data);
+  }
   return (
     <View style={styles.container}>
       <Camera style={styles.camera} 
           type={type} 
-          onBarCodeScanned={ result => console.log("data = " + result.data, "type = " + result.type)}>
+          onBarCodeScanned={result => onScan(result)}>
         <View>
           <TouchableOpacity
             onPress={() => {
