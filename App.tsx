@@ -17,7 +17,13 @@ function HomeScreen({ navigation }) {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      setScanned(false);
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
 
   if (hasPermission === null) {
     return <View />;
@@ -29,31 +35,32 @@ function HomeScreen({ navigation }) {
   async function onScan(result: BarCodeScanningResult) {
     setScanned(true);
     const details = await getDetailsFromBarcode(result.data);
+    console.log(`details = ${details}`)
     navigation.navigate('Settings', details);
   }
 
+  const camera = 
+    <BarCodeScanner style={styles.camera}
+      type={type}
+      onBarCodeScanned={scanned ? undefined : onScan}
+      barCodeTypes={[BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.ean13]}>
+      <View>
+        <TouchableOpacity
+          onPress={() => {
+            setType(
+              type === Camera.Constants.Type.back
+                ? Camera.Constants.Type.front
+                : Camera.Constants.Type.back
+            );
+          }}>
+          <Text> Flip </Text>
+        </TouchableOpacity>
+      </View>
+    </BarCodeScanner>
+
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera}
-        type={type}
-        onBarCodeScanned={scanned ? undefined : onScan}>
-        <View>
-          <TouchableOpacity
-            onPress={() => {
-              setType(
-                type === Camera.Constants.Type.back
-                  ? Camera.Constants.Type.front
-                  : Camera.Constants.Type.back
-              );
-            }}>
-            <Text> Flip </Text>
-          </TouchableOpacity>
-        </View>
-      </Camera>
-      <Button
-        title="Go to Settings"
-        onPress={() => navigation.navigate('Settings')}
-      />
+      {scanned ? undefined : camera}
     </View>
   );
 }
@@ -62,22 +69,25 @@ function SettingsScreen({ route, navigation }) {
   const details = route.params;
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>brand = {details['hints'][0]['food']['brand']}</Text>
+      <Text style={{color: 'white'}}>{details}</Text>
+      <Button
+          title="Go back Home"
+          onPress={() => navigation.navigate('Home')}/>
     </View>
   );
 }
 
-const Tab = createBottomTabNavigator();
-
 async function getDetailsFromBarcode(barcode: String) {
-  const response = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${ApiCredentials['appId']}&app_key=${ApiCredentials['appKey']}&upc=${barcode}&nutrition-type=cooking`, {
+  const response = await fetch(`https://world.openfoodfacts.org/api/v2/search?code=${barcode}&fields=brand_owner,brand_owner_imported,brands,brands_tags,_keywords`, {
     method: 'GET',
     headers: {
       'Accept': 'application/json'
     }
   });
-  return response.json();
+  return response.text();
 }
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
